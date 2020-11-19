@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Tilemaps;
 using System.IO;
+using System.Drawing;
 
 public class WorldGenerator : MonoBehaviour
 {
@@ -24,7 +25,7 @@ public class WorldGenerator : MonoBehaviour
         int[] continentSizes = determineContinentSizes(totalLandSize);
         tmpWorldMap = GenerateContinents(tmpWorldMap, continentSizes);
         int[,] worldMap = shrinkWorldMapToSize(tmpWorldMap);
-        floodFill(worldMap, 0, 0);
+        iterativeHomeMadeFloodFill(worldMap, new Vector2(0, 0));
         removeInsideWaters(worldMap);
         if (height > width)
             worldMap = rotateMap(worldMap);
@@ -49,7 +50,6 @@ public class WorldGenerator : MonoBehaviour
         int tmp = width;
         width = height;
         height = tmp;
-        Debug.Log("MAP ROTATED");
         return (newWorldMap);
     }
 
@@ -67,6 +67,66 @@ public class WorldGenerator : MonoBehaviour
                     worldMap[tmpX, tmpY] = 0;
             }
         }
+    }
+
+    void    iterativeHomeMadeFloodFill(int[,] worldMap, Vector2 tile)
+    {
+        worldMap[(int)tile.x, (int)tile.y] = -1;
+        List<Vector2> list = new List<Vector2>();
+        if (worldMap[(int)tile.x + 1, (int)tile.y] == 0)
+        {
+            worldMap[(int)tile.x + 1, (int)tile.y] = -2;
+            list.Add(new Vector2(tile.x + 1, tile.y));
+        }
+        if (worldMap[(int)tile.x, (int)tile.y + 1] == 0)
+        {
+            worldMap[(int)tile.x, (int)tile.y + 1] = -2;
+            list.Add(new Vector2(tile.x, tile.y + 1));
+        }
+        for (int i = 0; i < list.Count; i++)
+        {
+            for (Vector2 tmp = list[i]; tmp.x < width; tmp.x++)
+            {
+                if (worldMap[(int)tmp.x, (int)tmp.y] == -1 || worldMap[(int)tmp.x, (int)tmp.y] > 0)
+                    break ;
+                if (worldMap[(int)tmp.x, (int)tmp.y] == -2 || worldMap[(int)tmp.x, (int)tmp.y] == 0)
+                {
+                    worldMap[(int)tmp.x, (int)tmp.y] = -1;
+                    list = checkTwoSurroundingTiles(worldMap, (int)tmp.x, (int)tmp.y, list);
+                }
+
+            }
+            for (Vector2 tmp = list[i]; tmp.x > -1; tmp.x--)
+            {
+                if (worldMap[(int)tmp.x, (int)tmp.y] == -1 || worldMap[(int)tmp.x, (int)tmp.y] > 0)
+                    break ;
+                if (worldMap[(int)tmp.x, (int)tmp.y] == -2 || worldMap[(int)tmp.x, (int)tmp.y] == 0)
+                {
+                    worldMap[(int)tmp.x, (int)tmp.y] = -1;
+                    list = checkTwoSurroundingTiles(worldMap, (int)tmp.x, (int)tmp.y, list);
+                }
+            }
+        }
+    }
+
+    List<Vector2>    checkTwoSurroundingTiles(int[,] worldMap, int x, int y, List<Vector2> list)
+    {
+        if (y > 0 && worldMap[x, y - 1] == 0)
+        {
+            worldMap[x, y - 1] = -2;
+            list.Add(new Vector2(x, y - 1));
+        }
+        if (y < height - 1 && worldMap[x, y + 1] == 0)
+        {
+            worldMap[x, y + 1] = -2;
+            list.Add(new Vector2(x, y + 1));
+        }
+        if (x > 0 && worldMap[x -1, y] == 0)
+        {
+            worldMap[x - 1, y] = -2;
+            list.Add(new Vector2(x - 1, y));
+        }
+        return (list);
     }
 
     void    floodFill(int[,] worldMap, int x, int y)
@@ -169,10 +229,14 @@ public class WorldGenerator : MonoBehaviour
             {
                 int possibleSize = totalLandSize / (continentsNumber - i);
                 continentSizes[i] = (int)(Random.Range(possibleSize * 0.5f, possibleSize / 0.5f));
+                Debug.Log("continent " + i + " size = " + continentSizes[i]);
                 totalLandSize -= continentSizes[i];
             }
             else
+            {
                 continentSizes[i] = totalLandSize;
+                Debug.Log("continent " + i + " size = " + continentSizes[i]);
+            }
         }
         return (continentSizes);
     }
@@ -182,7 +246,6 @@ public class WorldGenerator : MonoBehaviour
         int currContinent = 0;
         while (currContinent < continentsNumber)
         {
-            FileIO.WriteStringToFile("debug.txt", "currContinent = " + currContinent + " NOUVEAU CONTINENT", true);
             Vector2 spawnPoint = findSpawnPointContinent(tmpWorldMap, currContinent);
             if (spawnPoint.x == -1)
                 break ;
@@ -198,12 +261,8 @@ public class WorldGenerator : MonoBehaviour
                 if (tmpWorldMap[(int)spawnPoint.x, (int)spawnPoint.y] == 0)
                     landAdded++;
                 tmpWorldMap[(int)spawnPoint.x, (int)spawnPoint.y] = currContinent + 1;
-                FileIO.WriteStringToFile("debug.txt", "initialSpawn = [" + spawnPoint.x + ", " + spawnPoint.y + "]", true);
                 if (spawnsNb == continentSizes[currContinent] * 10 - 1)
-                {
-                    //Debug.Log("JAI DU BREAKER PREVSPAWNS FULL");
                     break ;
-                }
                 prevSpawns[spawnsNb++] = spawnPoint;
 
                 if (spawnPoint.y > 0)
@@ -212,21 +271,18 @@ public class WorldGenerator : MonoBehaviour
                      checkIfOtherContinentIsClose(tmpWorldMap, currContinent + 1, (int)spawnPoint.x - 1, (int)spawnPoint.y - 1) == 0 && Random.Range(0f, 1f) > 0.5f)
                     {
                         tmpWorldMap[(int)spawnPoint.x - 1, (int)spawnPoint.y - 1] = currContinent + 1;
-                        FileIO.WriteStringToFile("debug.txt", "HAUT GAUCHE coord [" + (spawnPoint.x - 1) + ", " + (spawnPoint.y - 1) + "]", true);
                         landAdded++;
                     }
                     if (tmpWorldMap[(int)spawnPoint.x, (int)spawnPoint.y - 1] == 0f && 
                     checkIfOtherContinentIsClose(tmpWorldMap, currContinent + 1, (int)spawnPoint.x, (int)spawnPoint.y - 1) == 0 && Random.Range(0f, 1f) > 0.5f)
                     {
                         tmpWorldMap[(int)spawnPoint.x, (int)spawnPoint.y - 1] = currContinent + 1;
-                        FileIO.WriteStringToFile("debug.txt", "HAUT CENTRE coord [" + spawnPoint.x + ", " + (spawnPoint.y - 1) + "]", true);
                         landAdded++;
                     }
                     if (spawnPoint.x < width * 5 - 1 && tmpWorldMap[(int)spawnPoint.x + 1, (int)spawnPoint.y - 1] == 0 && 
                      checkIfOtherContinentIsClose(tmpWorldMap, currContinent + 1, (int)spawnPoint.x + 1, (int)spawnPoint.y - 1) == 0 && Random.Range(0f, 1f) > 0.5f)
                     {
                         tmpWorldMap[(int)spawnPoint.x + 1, (int)spawnPoint.y - 1] = currContinent + 1;
-                        FileIO.WriteStringToFile("debug.txt", "HAUT DROITE coord [" + (spawnPoint.x + 1) + ", " + (spawnPoint.y - 1) + "]", true);
                         landAdded++;
                     }
                 }
@@ -234,14 +290,12 @@ public class WorldGenerator : MonoBehaviour
                      checkIfOtherContinentIsClose(tmpWorldMap, currContinent + 1, (int)spawnPoint.x - 1, (int)spawnPoint.y) == 0 && Random.Range(0f, 1f) > 0.5f)
                 {
                     tmpWorldMap[(int)spawnPoint.x - 1, (int)spawnPoint.y] = currContinent + 1;
-                        FileIO.WriteStringToFile("debug.txt", "CENTRE GAUCHE coord [" + (spawnPoint.x - 1) + ", " + spawnPoint.y + "]", true);
                     landAdded++;
                 }
                 if (spawnPoint.x < width * 5 - 1 && tmpWorldMap[(int)spawnPoint.x + 1, (int)spawnPoint.y] == 0 && 
                      checkIfOtherContinentIsClose(tmpWorldMap, currContinent + 1, (int)spawnPoint.x + 1, (int)spawnPoint.y) == 0 && Random.Range(0f, 1f) > 0.5f)
                 {
                     tmpWorldMap[(int)spawnPoint.x + 1, (int)spawnPoint.y] = currContinent + 1;
-                        FileIO.WriteStringToFile("debug.txt", "CENTRE DROIT coord [" + (spawnPoint.x + 1) + ", " + spawnPoint.y + "]", true);
                     landAdded++;
                 }
                 if (spawnPoint.y < height * 5 - 1)
@@ -250,21 +304,18 @@ public class WorldGenerator : MonoBehaviour
                      checkIfOtherContinentIsClose(tmpWorldMap, currContinent + 1, (int)spawnPoint.x - 1, (int)spawnPoint.y + 1) == 0 && Random.Range(0f, 1f) > 0.5f)
                     {
                         tmpWorldMap[(int)spawnPoint.x - 1, (int)spawnPoint.y + 1] = currContinent + 1;
-                        FileIO.WriteStringToFile("debug.txt", "BAS GAUCHE coord [" + (spawnPoint.x - 1) + ", " + (spawnPoint.y + 1) + "]", true);
                         landAdded++;
                     }
                     if (tmpWorldMap[(int)spawnPoint.x, (int)spawnPoint.y + 1] == 0f && 
                      checkIfOtherContinentIsClose(tmpWorldMap, currContinent + 1, (int)spawnPoint.x, (int)spawnPoint.y + 1) == 0 && Random.Range(0f, 1f) > 0.5f)
                     {
                         tmpWorldMap[(int)spawnPoint.x, (int)spawnPoint.y + 1] = currContinent + 1;
-                        FileIO.WriteStringToFile("debug.txt", "BAS CENTRE coord [" + spawnPoint.x + ", " + (spawnPoint.y + 1) + "]", true);
                         landAdded++;
                     }
                     if (spawnPoint.x < width * 5 - 1 && tmpWorldMap[(int)spawnPoint.x + 1, (int)spawnPoint.y + 1] == 0 && 
                      checkIfOtherContinentIsClose(tmpWorldMap, currContinent + 1, (int)spawnPoint.x + 1, (int)spawnPoint.y + 1) == 0 && Random.Range(0f, 1f) > 0.5f)
                     {
                         tmpWorldMap[(int)spawnPoint.x + 1, (int)spawnPoint.y + 1] = currContinent + 1;
-                        FileIO.WriteStringToFile("debug.txt", "BAS DROITE coord [" + (spawnPoint.x + 1) + ", " + (spawnPoint.y + 1) + "]", true);
                         landAdded++;
                     }
                 } 
@@ -314,17 +365,13 @@ public class WorldGenerator : MonoBehaviour
             for (int x = checkX - 4; x < checkX + 5; x++)
             {
                 if ((y > 0 && y < height * 5 - 1 && x > 0 && x < width * 5 - 1) && tmpWorldMap[x, y] != 0 && tmpWorldMap[x, y] != currContinent)
-                {
-                    FileIO.WriteStringToFile("debug.txt", "CHECKIFOTHER RETURN 1", true);
                     return (1);
-                }
             }
         }
-        FileIO.WriteStringToFile("debug.txt", "CHECKIFOTHER RETURN 0", true);
         return (0);  
     }
 
-    Vector2 determineNewSpawnPoint(int[,] worldMap, Vector2 spawnPoint, Vector2[] prevSpawns, int spawnsNb, int currContinent)
+Vector2 determineNewSpawnPoint(int[,] worldMap, Vector2 spawnPoint, Vector2[] prevSpawns, int spawnsNb, int currContinent)
     {
         int randX = -2;
         int randY = -2;
@@ -366,20 +413,17 @@ public class WorldGenerator : MonoBehaviour
                     loop2++;
                     if (loop2 > 1000)
                     {
-                        FileIO.WriteStringToFile("debug.txt", "boucle inf dans la loop" , true);
                         Debug.Log("boucle inf dans la loop");
                         randX = -1;
                         break ;
                     }
                 }
-                FileIO.WriteStringToFile("debug.txt", "NOUVEAU SPAWN DANS LOOP = [" + randX + ", " + randY + "]", true);
                 return (spawnPoint = new Vector2(randX, randY));
             }
         }
-                FileIO.WriteStringToFile("debug.txt", "NOUVEAU SPAWN NORMAL = [" + (spawnPoint.x + randX) + ", " + (spawnPoint.y + randY) + "]", true);
         return (spawnPoint = new Vector2(spawnPoint.x + randX, spawnPoint.y + randY));
     }
-    
+
     int nothingToFill(int[,] worldMap, Vector2 spawnPoint, int randX, int randY)
     {
         Vector2 newSpawn = new Vector2(spawnPoint.x + randX, spawnPoint.y + randY);
