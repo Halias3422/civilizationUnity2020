@@ -290,8 +290,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 8c8f2c9047ec487fa985f474c806c40b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  width: 800
-  height: 800
+  width: 400
+  height: 400
   continentsNumber: 4
   grassTile: {fileID: 11400000, guid: 55a7c26d5023bd40da8c22758d974ec4, type: 2}
   grass2Tile: {fileID: 11400000, guid: 08c7b5f1ae9505db69877f7116702676, type: 2}

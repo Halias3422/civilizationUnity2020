@@ -46,7 +46,11 @@
   </PropertyGroup>
   <ItemGroup>
      <Compile Include="Assets\Scripts\CameraMovement.cs" />
-     <Compile Include="Assets\Scripts\WorldGenerator.cs" />
+     <Compile Include="Assets\Scripts\WorldGeneration\BiomeGeneration.cs" />
+     <Compile Include="Assets\Scripts\WorldGeneration\ContinentGeneration.cs" />
+     <Compile Include="Assets\Scripts\WorldGeneration\MountainGeneration.cs" />
+     <Compile Include="Assets\Scripts\WorldGeneration\WaterBodiesGeneration.cs" />
+     <Compile Include="Assets\Scripts\WorldGeneration\WorldGenerator.cs" />
  <Reference Include="Unity.Timeline.Editor">
  <HintPath>/home/halias/Documents/Unity/Reprise/Civilization/Library/ScriptAssemblies/Unity.Timeline.Editor.dll</HintPath>
  </Reference>
