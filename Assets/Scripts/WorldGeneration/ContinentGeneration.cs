@@ -24,7 +24,7 @@ public class ContinentGeneration : MonoBehaviour
         return (continentSizes);
     }
 
-    public static int[,] GenerateContinents(int[,] tmpWorldMap, int[] continentSizes, int continentsNumber, int width, int height)
+    public static int[,] GenerateContinents(int[,] tmpWorldMap, int[] continentSizes, int continentsNumber, int width, int height, int[,] continentShapes)
     {
         int currContinent = 0;
         int startX, endX, startY, endY;
@@ -43,11 +43,6 @@ public class ContinentGeneration : MonoBehaviour
 
             while (landAdded < continentSizes[currContinent])
             {
-                //int randomLeft, randomRight, randomUp, randomDown;
-                //randomLeft = randomRight = randomUp = randomDown = 0.4f;
-                //int shape = Random.Range(0, 3);
-                //if (shape == 0)
-                 //   randomLeft = randomRight = 0.3f;
                 int prevAdded = landAdded;
                 if (tmpWorldMap[(int)spawnPoint.x, (int)spawnPoint.y] == 0)
                     landAdded++;
@@ -73,128 +68,71 @@ public class ContinentGeneration : MonoBehaviour
                 {
                     if (spawnPoint.x > 0 && tmpWorldMap[(int)spawnPoint.x - 1, (int)spawnPoint.y - 1] == 0 && 
                      checkIfOtherContinentIsClose(tmpWorldMap, currContinent + 1, (int)spawnPoint.x - 1, (int)spawnPoint.y - 1, shoreDistance, width, height) == 0 && Random.Range(0f, 1f) > 0.8f)
-                    {
-                        tmpWorldMap[(int)spawnPoint.x - 1, (int)spawnPoint.y - 1] = currContinent + 1;
-                        if ((int)spawnPoint.x - 1 < startX)
-                            startX = (int)spawnPoint.x;
-                        if ((int)spawnPoint.x - 1 > endX)
-                            endX = (int)spawnPoint.x;
-                        if ((int)spawnPoint.y - 1 < startY)
-                            startY = (int)spawnPoint.y;
-                        if ((int)spawnPoint.y - 1 > endY)
-                            endY = (int)spawnPoint.y;
-                        landAdded++;
-                    }
+                        addLandTileToMap(tmpWorldMap, (int)spawnPoint.x - 1, (int)spawnPoint.y - 1, currContinent, ref startX, ref endX, ref startY, ref endY, ref landAdded);
+
                     if (tmpWorldMap[(int)spawnPoint.x, (int)spawnPoint.y - 1] == 0f && 
                     checkIfOtherContinentIsClose(tmpWorldMap, currContinent + 1, (int)spawnPoint.x, (int)spawnPoint.y - 1, shoreDistance, width, height) == 0 && Random.Range(0f, 1f) > 0.8f)
-                    {
-                        tmpWorldMap[(int)spawnPoint.x, (int)spawnPoint.y - 1] = currContinent + 1;
-                        if ((int)spawnPoint.x < startX)
-                            startX = (int)spawnPoint.x;
-                        if ((int)spawnPoint.x > endX)
-                            endX = (int)spawnPoint.x;
-                        if ((int)spawnPoint.y - 1 < startY)
-                            startY = (int)spawnPoint.y;
-                        if ((int)spawnPoint.y - 1 > endY)
-                            endY = (int)spawnPoint.y;
-                        landAdded++;
-                    }
+                        addLandTileToMap(tmpWorldMap, (int)spawnPoint.x, (int)spawnPoint.y - 1, currContinent, ref startX, ref endX, ref startY, ref endY, ref landAdded);
+
                     if (spawnPoint.x < width * 5 - 1 && tmpWorldMap[(int)spawnPoint.x + 1, (int)spawnPoint.y - 1] == 0 && 
                      checkIfOtherContinentIsClose(tmpWorldMap, currContinent + 1, (int)spawnPoint.x + 1, (int)spawnPoint.y - 1, shoreDistance, width, height) == 0 && Random.Range(0f, 1f) > 0.8f)
-                    {
-                        tmpWorldMap[(int)spawnPoint.x + 1, (int)spawnPoint.y - 1] = currContinent + 1;
-                        if ((int)spawnPoint.x + 1 < startX)
-                            startX = (int)spawnPoint.x;
-                        if ((int)spawnPoint.x + 1 > endX)
-                            endX = (int)spawnPoint.x;
-                        if ((int)spawnPoint.y - 1 < startY)
-                            startY = (int)spawnPoint.y;
-                        if ((int)spawnPoint.y - 1 > endY)
-                            endY = (int)spawnPoint.y;
-                        landAdded++;
-                    }
+                        addLandTileToMap(tmpWorldMap, (int)spawnPoint.x + 1, (int)spawnPoint.y - 1, currContinent, ref startX, ref endX, ref startY, ref endY, ref landAdded);
                 }
                 if (spawnPoint.x > 0 && tmpWorldMap[(int)spawnPoint.x - 1, (int)spawnPoint.y] == 0 && 
                      checkIfOtherContinentIsClose(tmpWorldMap, currContinent + 1, (int)spawnPoint.x - 1, (int)spawnPoint.y, shoreDistance, width, height) == 0 && Random.Range(0f, 1f) > 0.6f)
-                {
-                    tmpWorldMap[(int)spawnPoint.x - 1, (int)spawnPoint.y] = currContinent + 1;
-                        if ((int)spawnPoint.x - 1 < startX)
-                            startX = (int)spawnPoint.x;
-                        if ((int)spawnPoint.x - 1 > endX)
-                            endX = (int)spawnPoint.x;
-                        if ((int)spawnPoint.y < startY)
-                            startY = (int)spawnPoint.y;
-                        if ((int)spawnPoint.y > endY)
-                            endY = (int)spawnPoint.y;
-                    landAdded++;
-                }
+                        addLandTileToMap(tmpWorldMap, (int)spawnPoint.x - 1, (int)spawnPoint.y, currContinent, ref startX, ref endX, ref startY, ref endY, ref landAdded);
+
                 if (spawnPoint.x < width * 5 - 1 && tmpWorldMap[(int)spawnPoint.x + 1, (int)spawnPoint.y] == 0 && 
                      checkIfOtherContinentIsClose(tmpWorldMap, currContinent + 1, (int)spawnPoint.x + 1, (int)spawnPoint.y, shoreDistance, width, height) == 0 && Random.Range(0f, 1f) > 0.8f)
-                {
-                    tmpWorldMap[(int)spawnPoint.x + 1, (int)spawnPoint.y] = currContinent + 1;
-                        if ((int)spawnPoint.x + 1 < startX)
-                            startX = (int)spawnPoint.x;
-                        if ((int)spawnPoint.x + 1 > endX)
-                            endX = (int)spawnPoint.x;
-                        if ((int)spawnPoint.y < startY)
-                            startY = (int)spawnPoint.y;
-                        if ((int)spawnPoint.y > endY)
-                            endY = (int)spawnPoint.y;
-                    landAdded++;
-                }
+                        addLandTileToMap(tmpWorldMap, (int)spawnPoint.x + 1, (int)spawnPoint.y, currContinent, ref startX, ref endX, ref startY, ref endY, ref landAdded);
+
                 if (spawnPoint.y < height * 5 - 1)
                 {
                     if (spawnPoint.x > 0 && tmpWorldMap[(int)spawnPoint.x - 1, (int)spawnPoint.y + 1] == 0 && 
                      checkIfOtherContinentIsClose(tmpWorldMap, currContinent + 1, (int)spawnPoint.x - 1, (int)spawnPoint.y + 1, shoreDistance, width, height) == 0 && Random.Range(0f, 1f) > 0.8f)
-                    {
-                        tmpWorldMap[(int)spawnPoint.x - 1, (int)spawnPoint.y + 1] = currContinent + 1;
-                        if ((int)spawnPoint.x - 1 < startX)
-                            startX = (int)spawnPoint.x;
-                        if ((int)spawnPoint.x - 1 > endX)
-                            endX = (int)spawnPoint.x;
-                        if ((int)spawnPoint.y + 1 < startY)
-                            startY = (int)spawnPoint.y;
-                        if ((int)spawnPoint.y + 1 > endY)
-                            endY = (int)spawnPoint.y;
-                        landAdded++;
-                    }
+                        addLandTileToMap(tmpWorldMap, (int)spawnPoint.x - 1, (int)spawnPoint.y + 1, currContinent, ref startX, ref endX, ref startY, ref endY, ref landAdded);
+
                     if (tmpWorldMap[(int)spawnPoint.x, (int)spawnPoint.y + 1] == 0f && 
                      checkIfOtherContinentIsClose(tmpWorldMap, currContinent + 1, (int)spawnPoint.x, (int)spawnPoint.y + 1, shoreDistance, width, height) == 0 && Random.Range(0f, 1f) > 0.8f)
-                    {
-                        tmpWorldMap[(int)spawnPoint.x, (int)spawnPoint.y + 1] = currContinent + 1;
-                        if ((int)spawnPoint.x < startX)
-                            startX = (int)spawnPoint.x;
-                        if ((int)spawnPoint.x > endX)
-                            endX = (int)spawnPoint.x;
-                        if ((int)spawnPoint.y + 1 < startY)
-                            startY = (int)spawnPoint.y;
-                        if ((int)spawnPoint.y + 1 > endY)
-                            endY = (int)spawnPoint.y;
-                        landAdded++;
-                    }
+                        addLandTileToMap(tmpWorldMap, (int)spawnPoint.x, (int)spawnPoint.y + 1, currContinent, ref startX, ref endX, ref startY, ref endY, ref landAdded);
+
                     if (spawnPoint.x < width * 5 - 1 && tmpWorldMap[(int)spawnPoint.x + 1, (int)spawnPoint.y + 1] == 0 && 
                      checkIfOtherContinentIsClose(tmpWorldMap, currContinent + 1, (int)spawnPoint.x + 1, (int)spawnPoint.y + 1, shoreDistance, width, height) == 0 && Random.Range(0f, 1f) > 0.8f)
-                    {
-                        tmpWorldMap[(int)spawnPoint.x + 1, (int)spawnPoint.y + 1] = currContinent + 1;
-                        if ((int)spawnPoint.x + 1 < startX)
-                            startX = (int)spawnPoint.x;
-                        if ((int)spawnPoint.x + 1 > endX)
-                            endX = (int)spawnPoint.x;
-                        if ((int)spawnPoint.y + 1 < startY)
-                            startY = (int)spawnPoint.y;
-                        if ((int)spawnPoint.y + 1 > endY)
-                            endY = (int)spawnPoint.y;
-                        landAdded++;
-                    }
+                        addLandTileToMap(tmpWorldMap, (int)spawnPoint.x + 1, (int)spawnPoint.y + 1, currContinent, ref startX, ref endX, ref startY, ref endY, ref landAdded);
+
                 } 
                 spawnPoint = determineNewSpawnPoint(tmpWorldMap, spawnPoint, prevSpawns, spawnsNb, currContinent + 1, startX, endX, startY, endY, shoreDistance, width, height);
                 if (spawnPoint.x == -1)
                     break ;
             }
-            tmpWorldMap = MountainGeneration.generateMountainsOnContinent(tmpWorldMap, landAdded, startX, endX, startY, endY, currContinent + 1);
+            continentShapes = fillContinentShape(currContinent, continentShapes, startX, endX, startY, endY);
+            continentSizes[currContinent] = landAdded;
             currContinent++;
         }
         return (tmpWorldMap);
+    }
+
+    private static int[,]   fillContinentShape(int currContinent, int[,] continentShapes, int startX, int endX, int startY, int endY)
+    {
+        continentShapes[currContinent, 0] = startX;
+        continentShapes[currContinent, 1] = endX;
+        continentShapes[currContinent, 2] = startY;
+        continentShapes[currContinent, 3] = endY;
+        return (continentShapes);
+    }
+
+    private static void addLandTileToMap(int[,] tmpWorldMap, int tileX, int tileY, int currContinent, ref int startX, ref int endX, ref int startY, ref int endY, ref int landAdded)
+    {
+        tmpWorldMap[tileX, tileY] = currContinent + 1;
+        if (tileX < startX)
+            startX = tileX;
+        if (tileX > endX)
+            endX = tileX;
+        if (tileY < startY)
+            startY = tileY;
+        if (tileY > endY)
+            endY = tileY;
+        landAdded++;
     }
 
     private static Vector2 findSpawnPointContinent(int[,] tmpWorldMap, int currContinent, int shoreDistance, int width, int height)

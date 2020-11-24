@@ -16,20 +16,24 @@ public class WorldGenerator : MonoBehaviour
     [SerializeField] TileBase   waterTile = null;
     [SerializeField] Tilemap    mapTileMap = null;
 
-    // Start is called before the first frame update
     void Start()
     {
         File.Delete("debug.txt");
         int[,] tmpWorldMap = new int[width * 5, height * 5];
         int totalLandSize = (int)(width * height * 0.3f);
         int[] continentSizes = ContinentGeneration.determineContinentSizes(totalLandSize, continentsNumber);
-        tmpWorldMap = ContinentGeneration.GenerateContinents(tmpWorldMap, continentSizes, continentsNumber, width, height);
-        int[,] worldMap = shrinkWorldMapToSize(tmpWorldMap);
+        int[,] continentShapes = new int[continentsNumber, 4];
+        tmpWorldMap = ContinentGeneration.GenerateContinents(tmpWorldMap, continentSizes, continentsNumber, width, height, continentShapes);
+        Debug.Log("continentShapes[0] = " + continentShapes[0, 0] + " " + continentShapes[0, 1] + " " + continentShapes[0, 2] + " " + continentShapes[0, 3]);
+        Debug.Log("width = " + width + " height = " + height);
+        int[,] worldMap = shrinkWorldMapToSize(tmpWorldMap, continentShapes);
+        Debug.Log("APRES continentShapes[0] = " + continentShapes[0, 0] + " " + continentShapes[0, 1] + " " + continentShapes[0, 2] + " " + continentShapes[0, 3]);
+        Debug.Log("APRES width = " + width + " height = " + height);
         iterativeHomeMadeFloodFill(worldMap, new Vector2(0, 0));
-        removeInsideWaters(worldMap);
+        removeInsideWaters(worldMap, continentSizes, continentShapes);
+        worldMap = MountainGeneration.generateMountainsOnMap(worldMap, continentSizes, continentShapes, continentsNumber, width, height);
         if (height > width)
             worldMap = rotateMap(worldMap);
-        //worldMap = dispatchContinentOnWorldMap(continentMaps, continentMapSizes);
         printMapToScreen(worldMap);
     }
 
@@ -53,7 +57,7 @@ public class WorldGenerator : MonoBehaviour
         return (newWorldMap);
     }
 
-    void    removeInsideWaters(int[,] worldMap)
+    void    removeInsideWaters(int[,] worldMap, int[] continentSizes, int[,] continentShapes)
     {
         for (int tmpY = 0; tmpY < height; tmpY++)
         {
@@ -62,9 +66,24 @@ public class WorldGenerator : MonoBehaviour
                 if (worldMap[tmpX, tmpY] > 1 && worldMap[tmpX, tmpY] < 11)
                     worldMap[tmpX, tmpY] = 1;
                 else if (worldMap[tmpX, tmpY] == 0)
+                {
                     worldMap[tmpX, tmpY] = 1;
+                    addLandCountToContinentSize(continentSizes, continentShapes, tmpX, tmpY);
+                }
                 else if (worldMap[tmpX, tmpY] == -1)
                     worldMap[tmpX, tmpY] = 0;
+            }
+        }
+    }
+
+    void    addLandCountToContinentSize(int[] continentSizes, int[,] continentShapes, int x, int y)
+    {
+        for (int i = 0; i < continentsNumber; i++)
+        {
+            if (x >= continentShapes[i, 0] && x <= continentShapes[i, 1] && y >= continentShapes[i, 2] && y <= continentShapes[i, 3])
+            {
+                continentSizes[i]++;
+                return ;
             }
         }
     }
@@ -145,7 +164,7 @@ public class WorldGenerator : MonoBehaviour
         }
     }
 
-    int[,] shrinkWorldMapToSize(int[,] tmpWorldMap)
+    int[,] shrinkWorldMapToSize(int[,] tmpWorldMap, int[,] continentShapes)
     {
         int startX = findStartX(tmpWorldMap);
         int startY = findStartY(tmpWorldMap);
@@ -165,7 +184,20 @@ public class WorldGenerator : MonoBehaviour
             }
             newY++;
         }
+        continentShapes = changeContinentShapesLocations(continentShapes, startX, startY);
         return (worldMap);
+    }
+
+    int[,]  changeContinentShapesLocations(int[,] continentShapes, int startX, int startY)
+    {
+        for (int i = 0; i < continentsNumber; i++)
+        {
+            continentShapes[i, 0] -= startX;
+            continentShapes[i, 1] -= startX;
+            continentShapes[i, 2] -= startY;
+            continentShapes[i, 3] -= startY;
+        }
+        return (continentShapes);
     }
 
     int     findStartX(int[,] tmpWorldMap)
