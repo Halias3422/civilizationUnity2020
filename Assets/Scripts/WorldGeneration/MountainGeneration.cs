@@ -55,7 +55,7 @@ public class MountainGeneration : MonoBehaviour
                         worldMap[(int)spawnPoint.x, (int)spawnPoint.y + 1] = 11;
                         mountainAdded++;
                     }
-                    spawnPoint = determineNewMountainSpawnPoint(worldMap, spawnPoint, prevSpawns, spawnsNb, startX, endX, startY, endY);
+                    spawnPoint = determineNewMountainSpawnPoint(worldMap, spawnPoint, prevSpawns, spawnsNb, startX, endX, startY, endY, width, height);
                     spawnsNb++;
                 }
             }
@@ -63,7 +63,7 @@ public class MountainGeneration : MonoBehaviour
         return (worldMap);
     }
 
-    private static Vector2 determineNewMountainSpawnPoint(int[,] tmpWorldMap, Vector2 spawnPoint, Vector2[] prevSpawns, int spawnsNb, int startX, int endX, int startY, int endY)
+    private static Vector2 determineNewMountainSpawnPoint(int[,] tmpWorldMap, Vector2 spawnPoint, Vector2[] prevSpawns, int spawnsNb, int startX, int endX, int startY, int endY, int width, int height)
     {
         int randX = -2;
         int randY = -2;
@@ -73,6 +73,14 @@ public class MountainGeneration : MonoBehaviour
         {
             randX = Random.Range(-1, 2);
             randY = Random.Range(-1, 2);
+            if (randX > width - 1)
+                randX = width - 1;
+            if (randX < 0)
+                randX = 0;
+            if (randY > height - 1)
+                randY = height - 1;
+            if (randY < 0)
+                randY = 0;
             loop++;
             if (loop > 50)
             {

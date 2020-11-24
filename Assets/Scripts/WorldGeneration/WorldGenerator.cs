@@ -14,7 +14,13 @@ public class WorldGenerator : MonoBehaviour
     [SerializeField] TileBase   grass2Tile = null;
     [SerializeField] TileBase   grass3Tile = null;
     [SerializeField] TileBase   waterTile = null;
+    [SerializeField] TileBase   equatorial = null;
+    [SerializeField] TileBase   tropical = null;
+    [SerializeField] TileBase   desertic = null;
+    [SerializeField] TileBase   continental = null;
+    [SerializeField] TileBase   polar = null;
     [SerializeField] Tilemap    mapTileMap = null;
+    [SerializeField] Tilemap    biomeTileMap = null;
 
     void Start()
     {
@@ -24,17 +30,35 @@ public class WorldGenerator : MonoBehaviour
         int[] continentSizes = ContinentGeneration.determineContinentSizes(totalLandSize, continentsNumber);
         int[,] continentShapes = new int[continentsNumber, 4];
         tmpWorldMap = ContinentGeneration.GenerateContinents(tmpWorldMap, continentSizes, continentsNumber, width, height, continentShapes);
-        Debug.Log("continentShapes[0] = " + continentShapes[0, 0] + " " + continentShapes[0, 1] + " " + continentShapes[0, 2] + " " + continentShapes[0, 3]);
-        Debug.Log("width = " + width + " height = " + height);
         int[,] worldMap = shrinkWorldMapToSize(tmpWorldMap, continentShapes);
-        Debug.Log("APRES continentShapes[0] = " + continentShapes[0, 0] + " " + continentShapes[0, 1] + " " + continentShapes[0, 2] + " " + continentShapes[0, 3]);
-        Debug.Log("APRES width = " + width + " height = " + height);
         iterativeHomeMadeFloodFill(worldMap, new Vector2(0, 0));
         removeInsideWaters(worldMap, continentSizes, continentShapes);
         worldMap = MountainGeneration.generateMountainsOnMap(worldMap, continentSizes, continentShapes, continentsNumber, width, height);
+        //int[,] biomeMap = BiomeGeneration.generateBiomeMap(worldMap, width, height);
+        //worldMap = WaterBodiesGeneration.generateWaterBodiesOnMap(worldMap, continentSizes, continentShapes, continentsNumber, width, height);
         if (height > width)
+        {
+            Debug.Log("ROTATION");
+        //    biomeMap = rotateBiomeMap(biomeMap);
             worldMap = rotateMap(worldMap);
-        printMapToScreen(worldMap);
+        }
+        FileIO.WriteStringToFile("debug.txt", "pret a imprimer", true);
+        printMapToScreen(worldMap/*, biomeMap*/);
+    }
+
+    int[,]    rotateBiomeMap(int[,] biomeMap)
+    {
+        int[,] newBiomeMap = new int[height, width];
+        int newY = 0;
+
+        for (int x = width - 1; x > - 1; x--)
+        {
+            int newX = 0;
+            for (int y = 0; y < height - 1; y++)
+                newBiomeMap[newX++, newY] = biomeMap[x, y];
+            newY++;
+        }
+        return (newBiomeMap);
     }
 
     int[,]    rotateMap(int[,] worldMap)
@@ -263,8 +287,9 @@ public class WorldGenerator : MonoBehaviour
         return (1);
     }
 
-    void printMapToScreen(int[,] worldMap)
+    void printMapToScreen(int[,] worldMap/*, int[,] biomeMap*/)
     {
+        FileIO.WriteStringToFile("debug.txt", "width = " + width + " height = " + height, true);
         for (int y = 0; y < height; y++)
         {
             for (int x = 0; x < width; x++)
@@ -277,15 +302,18 @@ public class WorldGenerator : MonoBehaviour
                     mapTileMap.SetTile(new Vector3Int(x, height - y, 0), grass3Tile);
                 if (worldMap[x, y] == 11f)
                     mapTileMap.SetTile(new Vector3Int(x, height - y, 0), grass2Tile);
-                    /*
-                if (worldMap[x, y] == 1f)
-                    mapTileMap.SetTile(new Vector3Int(x, height - y, 0), grassTile);
-                if (worldMap[x, y] == 2f)
-                    mapTileMap.SetTile(new Vector3Int(x, height - y, 0), grass2Tile);
-                if (worldMap[x, y] == 3f)
-                    mapTileMap.SetTile(new Vector3Int(x, height - y, 0), grass3Tile);
-                    */
-
+              /*  FileIO.WriteStringToFile("debug.txt", "x = " + x + " y = " + y, true);
+                if (biomeMap[x, y] == 1)
+                    biomeTileMap.SetTile(new Vector3Int(x, height - y, 0), equatorial);
+                if (biomeMap[x, y] == 2)
+                    biomeTileMap.SetTile(new Vector3Int(x, height - y, 0), tropical);
+                if (biomeMap[x, y] == 3)
+                    biomeTileMap.SetTile(new Vector3Int(x, height - y, 0), continental);
+                if (biomeMap[x, y] == 4)
+                    biomeTileMap.SetTile(new Vector3Int(x, height - y, 0), desertic);
+                if (biomeMap[x, y] == 5)
+                    biomeTileMap.SetTile(new Vector3Int(x, height - y, 0), polar);
+                */
        
             }
         }

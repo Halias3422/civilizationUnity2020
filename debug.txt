@@ -1,0 +1,2 @@
+pret a imprimer
+width = 256 height = 245

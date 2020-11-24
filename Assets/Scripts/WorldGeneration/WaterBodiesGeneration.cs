@@ -4,15 +4,15 @@ using UnityEngine;
 
 public class WaterBodiesGeneration : MonoBehaviour
 {
-    // Start is called before the first frame update
-    void Start()
+    public static int[,]    generateWaterBodiesOnMap(int[,] worldMap, int[] continentSizes, int[,] continentShapes, int continentsNumber, int width, int height)
     {
-        
-    }
-
-    // Update is called once per frame
-    void Update()
-    {
-        
+        for (int z = 0; z < continentsNumber; z++)
+        {
+            int startX = continentShapes[z, 0];
+            int endX = continentShapes[z, 1];
+            int startY = continentShapes[z, 2];
+            int endY = continentShapes[z, 3];
+        }
+        return (worldMap);
     }
 }
