@@ -41,3 +41,9 @@ TagManager:
   - name: Default
     uniqueID: 0
     locked: 0
+  - name: worldMap
+    uniqueID: 762670531
+    locked: 0
+  - name: biomeMap
+    uniqueID: 3853734599
+    locked: 0

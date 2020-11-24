@@ -29,7 +29,7 @@ public class MountainGeneration : MonoBehaviour
                     prevSpawns[j] = new Vector2(-1, -1);
                 Vector2 spawnPoint = findMountainSpawnPoint(worldMap, startX, endX, startY, endY);
                 worldMap[(int)spawnPoint.x, (int)spawnPoint.y] = 11;
-                int mountainAdded = 0;
+                int mountainAdded = 1;
                 while (mountainAdded < mountainSizes[i])
                 {
                     if (spawnsNb >= mountainSizes[i] * 10 - 1)
@@ -71,16 +71,18 @@ public class MountainGeneration : MonoBehaviour
 
         while (randX == -2 || tmpWorldMap[(int)spawnPoint.x + randX, (int)spawnPoint.y + randY] <= 0 || WorldGenerator.isNotPrevSpawn(prevSpawns, spawnPoint, randX, randY, spawnsNb) == 0)
         {
-            randX = Random.Range(-1, 2);
-            randY = Random.Range(-1, 2);
-            if (randX > width - 1)
-                randX = width - 1;
-            if (randX < 0)
-                randX = 0;
-            if (randY > height - 1)
-                randY = height - 1;
-            if (randY < 0)
-                randY = 0;
+            if (spawnPoint.x == 0)
+                randX = Random.Range(0, 2);
+            else if (spawnPoint.x == width - 1)
+                randX = Random.Range(-1, 1);
+            else
+                randX = Random.Range(-1, 2);
+            if (spawnPoint.y == 0)
+                randY = Random.Range(0, 2);
+            else if (spawnPoint.y == height - 1)
+                randY = Random.Range(-1, 1);
+            else
+                randY = Random.Range(-1, 2);
             loop++;
             if (loop > 50)
             {

@@ -291,8 +291,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 8c8f2c9047ec487fa985f474c806c40b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  width: 400
-  height: 400
+  width: 200
+  height: 200
   continentsNumber: 4
   grassTile: {fileID: 11400000, guid: 55a7c26d5023bd40da8c22758d974ec4, type: 2}
   grass2Tile: {fileID: 11400000, guid: 08c7b5f1ae9505db69877f7116702676, type: 2}
@@ -386,8 +386,8 @@ TilemapRenderer:
   m_AutoUVMaxDistance: 0.5
   m_AutoUVMaxAngle: 89
   m_LightmapParameters: {fileID: 0}
-  m_SortingLayerID: 0
-  m_SortingLayer: 0
+  m_SortingLayerID: 762670531
+  m_SortingLayer: 1
   m_SortingOrder: 0
   m_ChunkSize: {x: 32, y: 32, z: 32}
   m_ChunkCullingBounds: {x: 0, y: 0, z: 0}
@@ -501,8 +501,8 @@ TilemapRenderer:
   m_AutoUVMaxDistance: 0.5
   m_AutoUVMaxAngle: 89
   m_LightmapParameters: {fileID: 0}
-  m_SortingLayerID: 0
-  m_SortingLayer: 0
+  m_SortingLayerID: -441232697
+  m_SortingLayer: 2
   m_SortingOrder: 0
   m_ChunkSize: {x: 32, y: 32, z: 32}
   m_ChunkCullingBounds: {x: 0, y: 0, z: 0}
