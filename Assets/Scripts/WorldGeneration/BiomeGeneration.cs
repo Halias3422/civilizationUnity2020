@@ -34,7 +34,93 @@ public class BiomeGeneration : MonoBehaviour
         int startY = Random.Range(minStartY, maxStartY);
         int endY = Random.Range(minEndY, maxEndY);
         int biomeTiles = addNewBiomeToMap(biomeMap, width, height, startY, endY, minStartY, maxStartY, minEndY, maxEndY, 2); 
+        equalizeBothSides(biomeMap, width, height, minStartY, maxEndY, 2);
         return (biomeTiles);
+    }
+
+    private static void equalizeBothSides(int[,] biomeMap, int width, int height, int minY, int maxY, int biomeNb)
+    {
+        int startYLeft = minY;
+        while (biomeMap[0, startYLeft] != biomeNb)
+            startYLeft++;
+        int endYLeft = startYLeft;
+        while (biomeMap[0, endYLeft + 1] == biomeNb)
+            endYLeft++;
+        int startYRight = minY;
+        while (biomeMap[width - 1, startYRight] != biomeNb)
+            startYRight++;
+        int endYRight = startYRight;
+        while (biomeMap[width - 1, endYRight + 1] == biomeNb)
+            endYRight++;
+        if ((endYLeft - startYLeft) > (endYRight - startYRight))
+            increaseBiomeRightEndSize(biomeMap, width, startYLeft, endYLeft, minY, biomeNb);
+        else if ((endYLeft - startYLeft) < (endYRight - startYRight))
+            decreaseBiomeRightEndSize(biomeMap, width, startYLeft, endYLeft, minY, maxY, biomeNb);
+
+    }
+
+    private static void  increaseBiomeRightEndSize(int[,] biomeMap, int width, int startYLeft, int endYLeft, int minY, int biomeNb)
+    {
+        for (int y = startYLeft + 1; y < endYLeft; y++)
+            biomeMap[width - 1, y] = biomeNb;
+        int prevStartY = startYLeft + 1;
+        int prevEndY = endYLeft - 1;
+        int x = width -2;
+        int actStartY = minY;
+        while (biomeMap[x, actStartY] != biomeNb)
+            actStartY++;
+        int actEndY = actStartY;
+        while (biomeMap[x, actEndY + 1] == biomeNb)
+            actEndY++;
+        while (actStartY > prevStartY + 1 || actEndY < prevEndY - 1)
+        {
+            while (actStartY > prevStartY + 1)
+                biomeMap[x, actStartY--] = biomeNb;
+            while (actEndY < prevEndY - 1)
+                biomeMap[x, actEndY++] = biomeNb;
+            prevStartY = actStartY;
+            prevEndY = actEndY;
+            x--;
+            actStartY = minY;
+            while (biomeMap[x, actStartY] != biomeNb)
+                actStartY++;
+            actEndY = actStartY;
+            while (biomeMap[x, actEndY + 1] == biomeNb)
+                actEndY++;
+        } 
+    }
+
+    private static void  decreaseBiomeRightEndSize(int[,] biomeMap, int width, int startYLeft, int endYLeft, int minY, int maxY, int biomeNb)
+    {
+        int prevStartY = minY;
+        while (prevStartY < startYLeft - 1)
+            biomeMap[width - 1, prevStartY++] = biomeNb - 1;
+        int prevEndY = maxY;
+        while (prevEndY > endYLeft + 1)
+            biomeMap[width - 1, prevEndY--] = biomeNb - 1;
+        int actStartY = minY;
+        int x = width - 2;
+        while (biomeMap[x, actStartY] != biomeNb)
+            actStartY++;
+        int actEndY = actStartY;
+        while (biomeMap[x, actEndY + 1] == biomeNb)
+            actEndY++;
+        while (actStartY < prevStartY - 1 || actEndY > prevEndY + 1)
+        {
+            while (actStartY < prevStartY - 1)
+                biomeMap[x, actStartY++] = biomeNb;
+            while (actEndY > prevEndY + 1)
+                biomeMap[x, actEndY--] = biomeNb;
+            prevStartY = actStartY;
+            prevEndY = actEndY;
+            x--;
+            actStartY = minY;
+            while (biomeMap[x, actStartY] != biomeNb)
+                actStartY++;
+            actEndY = actStartY;
+            while (biomeMap[x, actEndY + 1] == biomeNb)
+                actEndY++;
+        }
     }
 
     private static int   addTropicalToBiomeMap(int[,] biomeMap, int width, int height)
@@ -46,6 +132,7 @@ public class BiomeGeneration : MonoBehaviour
         int startY = Random.Range(minStartY, maxStartY);
         int endY = Random.Range(minEndY, maxEndY);
         int biomeTiles = addNewBiomeToMap(biomeMap, width, height, startY, endY, minStartY, maxStartY, minEndY, maxEndY, 3); 
+        equalizeBothSides(biomeMap, width, height, minStartY, maxEndY, 3);
         return (biomeTiles);
     }
 
@@ -58,14 +145,15 @@ public class BiomeGeneration : MonoBehaviour
         int startY = Random.Range(minStartY, maxStartY);
         int endY = Random.Range(minEndY, maxEndY);
         int biomeTiles = addNewBiomeToMap(biomeMap, width, height, startY, endY, minStartY, maxStartY, minEndY, maxEndY, 4);
+        equalizeBothSides(biomeMap, width, height, minStartY, maxEndY, 4);
         return (biomeTiles);
     }
 
     private static int   addDesertsToBiomeMap(int[,] biomeMap, int width, int height, int tropicalTiles)
     {
         int biomeTiles = 0;
-        int desertsNb = Random.Range(1, 5);
-        int desertTilesNb = tropicalTiles / 10;
+        int desertsNb = Random.Range(2, 5);
+        int desertTilesNb = tropicalTiles / 20;
         int desertSize = 0;
         for (int i = 0; i < desertsNb; i++)
         {
@@ -87,25 +175,25 @@ public class BiomeGeneration : MonoBehaviour
                     break ;
                 prevSpawns[spawnsNb++] = spawnPoint;
                 if ((int)spawnPoint.y > 0 && (biomeMap[(int)spawnPoint.x, (int)spawnPoint.y - 1] == 3 || biomeMap[(int)spawnPoint.x, (int)spawnPoint.y - 1] == 4) &&
-                Random.Range(0f, 1f) >= 0.3f)
+                Random.Range(0f, 1f) >= 0.1f)
                 {
                     biomeMap[(int)spawnPoint.x, (int)spawnPoint.y - 1] = 5;
                     desertAdded++;
                 }
                 if ((int)spawnPoint.x > 0 && (biomeMap[(int)spawnPoint.x - 1, (int)spawnPoint.y] == 3 || biomeMap[(int)spawnPoint.x - 1, (int)spawnPoint.y] == 4) &&
-                Random.Range(0f, 1f) >= 0.3f)
+                Random.Range(0f, 1f) >= 0.1f)
                 {
                     biomeMap[(int)spawnPoint.x - 1, (int)spawnPoint.y] = 5;
                     desertAdded++;
                 }
                 if ((int)spawnPoint.x < width - 1 && (biomeMap[(int)spawnPoint.x + 1, (int)spawnPoint.y] == 3 || biomeMap[(int)spawnPoint.x + 1, (int)spawnPoint.y] == 4) &&
-                Random.Range(0f, 1f) >= 0.3f)
+                Random.Range(0f, 1f) >= 0.1f)
                 {
                     biomeMap[(int)spawnPoint.x + 1, (int)spawnPoint.y] = 5;
                     desertAdded++;
                 }
                 if ((int)spawnPoint.y < height - 1 && (biomeMap[(int)spawnPoint.x, (int)spawnPoint.y + 1] == 3 || biomeMap[(int)spawnPoint.x, (int)spawnPoint.y + 1] == 4) &&
-                Random.Range(0f, 1f) >= 0.3f)
+                Random.Range(0f, 1f) >= 0.1f)
                 {
                     biomeMap[(int)spawnPoint.x, (int)spawnPoint.y + 1] = 5;
                     desertAdded++;
@@ -124,8 +212,8 @@ public class BiomeGeneration : MonoBehaviour
         int minY = (int)(height * 0.3f);
         int maxY = (int)(height * 0.7f);
         int loop = 0;
-        while (randX == -2 || (biomeMap[(int)spawnPoint.x + randX, (int)spawnPoint.y + randY] != 3 && biomeMap[(int)spawnPoint.x + randX, (int)spawnPoint.y + randY] != 4) ||
-        WorldGenerator.isNotPrevSpawn(prevSpawns, spawnPoint, randX, randY, spawnsNb) == 0)
+        while (randX == -2 || (biomeMap[(int)spawnPoint.x + randX, (int)spawnPoint.y + randY] != 3 && biomeMap[(int)spawnPoint.x + randX, (int)spawnPoint.y + randY] != 4) /*||
+        WorldGenerator.isNotPrevSpawn(prevSpawns, spawnPoint, randX, randY, spawnsNb) == 0*/)
         {
             if (spawnPoint.x == 0)
                 randX = Random.Range(0, 2);

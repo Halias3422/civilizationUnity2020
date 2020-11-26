@@ -5,20 +5,32 @@ using UnityEngine.Tilemaps;
 using System.IO;
 using System.Drawing;
 
+/*  CODES
+
+    0 - WATER
+    1 - LAND
+    2 - FOREST
+    3 - LAKE / RIVER
+    11 - MOUNTAINS
+
+*/
 public class WorldGenerator : MonoBehaviour
 {
     [SerializeField] int        width = 0;
     [SerializeField] int        height = 0;
     [SerializeField] int        continentsNumber = 0;
+
     [SerializeField] TileBase   grassTile = null;
-    [SerializeField] TileBase   grass2Tile = null;
-    [SerializeField] TileBase   grass3Tile = null;
     [SerializeField] TileBase   waterTile = null;
+    [SerializeField] TileBase   desertTile = null;
+    [SerializeField] TileBase   mountainTile = null;
+
     [SerializeField] TileBase   equatorial = null;
     [SerializeField] TileBase   tropical = null;
     [SerializeField] TileBase   desertic = null;
     [SerializeField] TileBase   continental = null;
     [SerializeField] TileBase   polar = null;
+
     [SerializeField] Tilemap    mapTileMap = null;
     [SerializeField] Tilemap    biomeTileMap = null;
 
@@ -34,34 +46,97 @@ public class WorldGenerator : MonoBehaviour
         iterativeHomeMadeFloodFill(worldMap, new Vector2(0, 0));
         removeInsideWaters(worldMap, continentSizes, continentShapes);
         worldMap = MountainGeneration.generateMountainsOnMap(worldMap, continentSizes, continentShapes, continentsNumber, width, height);
-        //worldMap = WaterBodiesGeneration.generateWaterBodiesOnMap(worldMap, continentSizes, continentShapes, continentsNumber, width, height);
         if (height > width)
         {
-            Debug.Log("ROTATE");
-            worldMap = rotateMap(worldMap);
+            worldMap = rotateMap(worldMap, ref continentShapes);
+            Debug.Log("ROTATION");
+            FileIO.WriteStringToFile("debug.txt", "rotation!!!!!", true);
         }
         int[,] biomeMap = BiomeGeneration.generateBiomeMap(worldMap, width, height);
+        addDesertsToContinents(worldMap, biomeMap, width, height);
+        worldMap = WaterBodiesGeneration.generateWaterBodiesOnMap(worldMap, biomeMap, continentSizes, continentShapes, continentsNumber, width, height);
         printMapToScreen(worldMap, biomeMap);
     }
 
-    int[,]    rotateMap(int[,] worldMap)
+    void Update()
     {
+        if (Input.GetKeyDown("r") && biomeTileMap.GetComponent<Renderer>().enabled == true)
+            biomeTileMap.GetComponent<Renderer>().enabled = false;
+        else if (Input.GetKeyDown("r"))
+            biomeTileMap.GetComponent<Renderer>().enabled = true;
+    }
+
+    void      addDesertsToContinents(int[,] worldMap, int[,] biomeMap, int width, int height)
+    {
+        for (int y = (int)(height * 0.3f); y <= (int)(height * 0.7f); y++)
+        {
+            for (int x = 0; x < width - 1; x++)
+            {
+                if (worldMap[x, y] == 1 && biomeMap[x, y] != 5 && y > 0 && biomeMap[x, y - 1] == 5 && y < height - 1 && biomeMap[x, y + 1] == 5 &&
+                x > 0 && biomeMap[x - 1, y] == 5 && x < width - 1 && biomeMap[x + 1, y] == 5)
+                    worldMap[x, y] = 12;
+                else if (worldMap[x, y] == 1 && biomeMap[x, y] == 5)
+                    worldMap[x, y] = 12;
+            }
+        }
+    }
+
+    int[,]    rotateMap(int[,] worldMap, ref int[,] continentShapes)
+    {
+        FileIO.WriteStringToFile("debug.txt", "je rotate", true);
         int[,] newWorldMap = new int[height, width];
         int newY = 0;
+        Vector2[] continentShapeChanged = new Vector2[continentsNumber * 4];
+        for (int i = 0; i < continentsNumber * 4; i++)
+            continentShapeChanged[i] = new Vector2(-1, -1);
+        int changed = 0;
 
         for (int x = width - 1; x > -1; x--)
         {
             int newX = 0;
             for (int y = 0; y < height - 1; y++)
             {
-                newWorldMap[newX++, newY] = worldMap[x, y];
+                for (int j = 0; j < continentsNumber; j++)
+                {
+                    if (continentShapes[j, 0] == x && continentShapes[j, 2] == y && shapeNotAlreadyChanged(j, 0, continentShapeChanged, changed) == 1)
+                    {
+                        FileIO.WriteStringToFile("debug.txt", "x = " + x + " y = " + y + " newX = " + newX + " newY = " + newY + " shape[" + j + ", 0] = " + continentShapes[j, 0], true);
+                        continentShapes[j, 0] = newX;
+                        continentShapes[j, 2] = newY;
+                        FileIO.WriteStringToFile("debug.txt", "APRES shape[" + j + ", 0] = " + continentShapes[j, 0], true);
+                        continentShapeChanged[changed++] = new Vector2(j, 0);
+                        continentShapeChanged[changed++] = new Vector2(j, 2);
+                    }
+                    if (continentShapes[j, 3] == y && continentShapes[j, 1] == x && shapeNotAlreadyChanged(j, 3, continentShapeChanged, changed) == 1)
+                    {
+                        FileIO.WriteStringToFile("debug.txt", "x = " + x + " y = " + y + "newX = " + newX + " newY = " + newY + " shape[" + j + ", 3] = " + continentShapes[j, 3], true);
+                        continentShapes[j, 3] = newY;
+                        continentShapes[j, 1] = newX;
+                        FileIO.WriteStringToFile("debug.txt", "APRES shape[" + j + ", 3] = " + continentShapes[j, 3], true);
+                        continentShapeChanged[changed++] = new Vector2(j, 3);
+                        continentShapeChanged[changed++] = new Vector2(j, 1);
+                    }
+                    
+                }
+                newWorldMap[newX++, newY] = worldMap[x, y]; 
             }
             newY++;
         }
+        FileIO.WriteStringToFile("debug.txt", "je sors de rotate", true);
         int tmp = width;
         width = height;
         height = tmp;
         return (newWorldMap);
+    }
+
+    int shapeNotAlreadyChanged(int nbX, int nbY, Vector2[] continentShapeChanged, int size)
+    {
+        for (int j = 0; j < size; j++)
+        {
+            if (continentShapeChanged[j].x == nbX && continentShapeChanged[j].y == nbY)
+                return (0);
+        }
+        return (1);
     }
 
     void    removeInsideWaters(int[,] worldMap, int[] continentSizes, int[,] continentShapes)
@@ -199,10 +274,10 @@ public class WorldGenerator : MonoBehaviour
     {
         for (int i = 0; i < continentsNumber; i++)
         {
-            continentShapes[i, 0] -= startX;
-            continentShapes[i, 1] -= startX;
-            continentShapes[i, 2] -= startY;
-            continentShapes[i, 3] -= startY;
+            continentShapes[i, 0] = (continentShapes[i, 0] - startX) + 4;
+            continentShapes[i, 1] = (continentShapes[i, 1] - startX) + 4;
+            continentShapes[i, 2] = (continentShapes[i, 2] - startY) + 4;
+            continentShapes[i, 3] = (continentShapes[i, 3] - startY) + 4;
         }
         return (continentShapes);
     }
@@ -276,14 +351,14 @@ public class WorldGenerator : MonoBehaviour
         {
             for (int x = 0; x < width; x++)
             {
-                if (worldMap[x, y] == 0f)
+                if (worldMap[x, y] == 0f || worldMap[x, y] == 3f)
                     mapTileMap.SetTile(new Vector3Int(x, height - y, 0), waterTile);
-                if (worldMap[x, y] > 0f && worldMap[x, y] < 11f)
+                if (worldMap[x, y] == 1f)
                     mapTileMap.SetTile(new Vector3Int(x, height - y, 0), grassTile);
-                if (worldMap[x, y] < 0f)
-                    mapTileMap.SetTile(new Vector3Int(x, height - y, 0), grass3Tile);
                 if (worldMap[x, y] == 11f)
-                    mapTileMap.SetTile(new Vector3Int(x, height - y, 0), grass2Tile);
+                    mapTileMap.SetTile(new Vector3Int(x, height - y, 0), mountainTile);
+                if (worldMap[x, y] == 12f)
+                    mapTileMap.SetTile(new Vector3Int(x, height - y, 0), desertTile);
 
                 if (biomeMap[x, y] == 1)
                     biomeTileMap.SetTile(new Vector3Int(x, height - y, 0), polar);
@@ -299,15 +374,6 @@ public class WorldGenerator : MonoBehaviour
         }
     }
 
-    void initContinentMap(int[,]continentMap, int sizeX, int sizeY)
-    {
-        for (int y = 0; y < sizeY; y++)
-        {
-            for (int x = 0; x < sizeX; x++)
-                continentMap[x, y] = 0;
-        }
-    }
-
     void initWorldMap(int[,] worldMap)
     {
         for (int y = 0; y < height; y++)
@@ -316,6 +382,19 @@ public class WorldGenerator : MonoBehaviour
                 worldMap[x, y] = 0;
         }
     }
+
+    public static void    debugPrintMap(int[,] worldMap, int width, int height)
+    {
+        for (int y = 0; y < height; y++)
+        {
+            for (int x = 0; x < width; x++)
+            {
+                FileIO.WriteStringNoLineToFile("debug.txt", worldMap[x, y] + "    ", true);
+            }
+            FileIO.WriteStringToFile("debug.txt", "", true);
+        }
+    }
+
 
 public class FileIO {
 
@@ -337,6 +416,13 @@ sw.Close();
 
 }
 
+public static void WriteStringNoLineToFile(string fileName, string content, bool append)
+{
+    StreamWriter sw = new StreamWriter(fileName, append);
+    sw.Write(content);
+    sw.Close();
+
 }
-    }
+}
+}
 

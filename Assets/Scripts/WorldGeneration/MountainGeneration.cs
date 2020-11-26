@@ -16,7 +16,7 @@ public class MountainGeneration : MonoBehaviour
             int mountainTiles = Random.Range(continentSizes[z] / 8, continentSizes[z] / 15);
             int mountainBodies;
             if (mountainTiles >= 6)
-                mountainBodies = Random.Range(1, 6);
+                mountainBodies = Random.Range(1, 4);
             else
                 mountainBodies = 1;
             int[] mountainSizes = determineMountainSizes(mountainBodies, mountainTiles);
@@ -69,20 +69,36 @@ public class MountainGeneration : MonoBehaviour
         int randY = -2;
         int loop = 0;
 
-        while (randX == -2 || tmpWorldMap[(int)spawnPoint.x + randX, (int)spawnPoint.y + randY] <= 0 || WorldGenerator.isNotPrevSpawn(prevSpawns, spawnPoint, randX, randY, spawnsNb) == 0)
+        while (randX == -2 || tmpWorldMap[(int)spawnPoint.x + randX, (int)spawnPoint.y + randY] <= 0 /*|| WorldGenerator.isNotPrevSpawn(prevSpawns, spawnPoint, randX, randY, spawnsNb) == 0*/)
         {
-            if (spawnPoint.x == 0)
-                randX = Random.Range(0, 2);
-            else if (spawnPoint.x == width - 1)
-                randX = Random.Range(-1, 1);
+            if (Random.Range(0, 2) == 0)
+            {
+                randX = 0;
+                while (randX == 0)
+                {
+                    if (spawnPoint.x == startX)
+                        randX = Random.Range(0, 2);
+                    else if (spawnPoint.x == endX)
+                        randX = Random.Range(-1, 1);
+                    else
+                        randX = Random.Range(-1, 2);
+                    randY = 0;
+                }
+            }
             else
-                randX = Random.Range(-1, 2);
-            if (spawnPoint.y == 0)
-                randY = Random.Range(0, 2);
-            else if (spawnPoint.y == height - 1)
-                randY = Random.Range(-1, 1);
-            else
-                randY = Random.Range(-1, 2);
+            {
+               randY = 0;
+               while (randY == 0)
+               {
+                    if (spawnPoint.y == startY)
+                        randY = Random.Range(0, 2);
+                    else if (spawnPoint.y == endY)
+                        randY = Random.Range(-1, 1);
+                    else
+                        randY = Random.Range(-1, 2);
+                    randX = 0;
+               } 
+            }
             loop++;
             if (loop > 50)
             {

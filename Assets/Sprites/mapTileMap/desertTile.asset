@@ -10,9 +10,9 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 13312, guid: 0000000000000000e000000000000000, type: 0}
-  m_Name: grass2Tile
+  m_Name: desertTile
   m_EditorClassIdentifier: 
-  m_Sprite: {fileID: 21300000, guid: f65cc2ae5f307fdf99aafa9f986f3bc0, type: 3}
+  m_Sprite: {fileID: 21300000, guid: 411e9af5f88adfa368d4d7bb67933bde, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_Transform:
     e00: 1

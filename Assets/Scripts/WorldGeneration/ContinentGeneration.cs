@@ -139,7 +139,6 @@ public class ContinentGeneration : MonoBehaviour
     {
         Vector2 spawnPoint = new Vector2(-1, -1);
         int loop = 0;
-        Debug.Log("width = " + width + " height = " + height);
         while (spawnPoint.x == -1 || tmpWorldMap[(int)spawnPoint.x, (int)spawnPoint.y] != 0 || checkIfOtherContinentIsClose(tmpWorldMap, currContinent + 1, (int)spawnPoint.x, (int)spawnPoint.y, shoreDistance, width, height) == 1)
         {
             loop++;

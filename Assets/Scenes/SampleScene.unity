@@ -293,14 +293,14 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   width: 200
   height: 200
-  continentsNumber: 4
+  continentsNumber: 1
   grassTile: {fileID: 11400000, guid: 55a7c26d5023bd40da8c22758d974ec4, type: 2}
-  grass2Tile: {fileID: 11400000, guid: 08c7b5f1ae9505db69877f7116702676, type: 2}
-  grass3Tile: {fileID: 11400000, guid: 93fd344ba928b7cb4b3d603d8a0b7321, type: 2}
   waterTile: {fileID: 11400000, guid: a58434bc28c40e4a3bec217ae4151d78, type: 2}
+  desertTile: {fileID: 11400000, guid: 0d855a45ef14c0f0aa6789305cfd064b, type: 2}
+  mountainTile: {fileID: 11400000, guid: 608be2653d8a230e3b3f161219937836, type: 2}
   equatorial: {fileID: 11400000, guid: ded8732df209e9ad1a945919f6ec24ad, type: 2}
   tropical: {fileID: 11400000, guid: c21b2ab72bf3750c7b5213efc660f9e1, type: 2}
-  desertic: {fileID: 11400000, guid: 4898f37985ed0e1ff9cf9ca910baf84f, type: 2}
+  desertic: {fileID: 11400000, guid: a258afda1f9eb60679149d8faaac6780, type: 2}
   continental: {fileID: 11400000, guid: 58838ec760917ca03aed58227779410b, type: 2}
   polar: {fileID: 11400000, guid: 69b5b78c3b7a1391fa3a382f48284bb5, type: 2}
   mapTileMap: {fileID: 1594266019}
